@@ -5,6 +5,7 @@ import axios from 'axios';
 interface StoreState {
   isAuthenticated: boolean;
   favorites: number[]; // List of favorite program IDs
+  favoritesItems: [];
   userToken: string | null; // User token for authentication
   loginErrorMessage: string;
   deviceId: string;
@@ -17,6 +18,7 @@ export const useStore = defineStore('main', {
   state: (): StoreState => ({
     isAuthenticated: false,
     favorites: [],
+    favoritesItems: [],
     userToken: null,
     loginErrorMessage: '',
     deviceId: 'ynt10qn1nhhkydsduew47m5m2k6xhx0',
@@ -69,6 +71,7 @@ export const useStore = defineStore('main', {
       this.userToken = null;
       this.profileId = null;
       this.favorites = [];
+      this.favoritesItems = [];
       localStorage.removeItem('userToken');
       localStorage.removeItem('profileId');
     },
@@ -103,6 +106,9 @@ export const useStore = defineStore('main', {
             }
           );
           this.favorites = response.data.list.map((program: any) => program.id); // Presumably
+
+          this.favoritesItems = response.data.list;
+          
         } catch (error) {
           console.error('Failed to fetch favorites:', error);
         }

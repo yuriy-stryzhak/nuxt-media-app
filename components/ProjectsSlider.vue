@@ -68,10 +68,10 @@
     <v-container v-else>
         <v-row>
             <v-col
-            v-for="n in 4"
+            v-for="n in 6"
             :key="n"
             cols="12"
-            md="3"
+            md="2"
             >
             <v-skeleton-loader
                 class="mx-auto border"

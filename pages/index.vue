@@ -7,9 +7,10 @@
                     class="d-flex justify-between align-center mb-10"
                 >
                     <v-badge
-                    :content="store.favorites.length"
-                    color="red"
-                    overlap
+                        :content="store.favorites.length"
+                        color="red"
+                        overlap
+                        :class="store.favorites.length === 0 ? 'invisible' : ''"
                     >
                     <v-btn
                         append-icon="mdi-heart"

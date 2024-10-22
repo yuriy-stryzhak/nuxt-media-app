@@ -61,7 +61,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useStore } from '@/stores/useStore';
 
@@ -94,6 +94,15 @@ const submitForm = () => {
         });
     }
 };
+
+onMounted(async () => {
+    await store.restoreSession();
+
+    if (store.isAuthenticated) {
+        router.push('/');
+    }
+});
+
 </script>
 
 <style scoped>
