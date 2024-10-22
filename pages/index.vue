@@ -1,82 +1,46 @@
 <template>
     <div class="container mx-auto py-10">
-        <v-row>
-            <v-col
-                cols="12"
-                class="d-flex justify-end"
-            >
-                <v-btn
-                    color="primary"
-                    :append-icon="store.isAuthenticated ? 'mdi-logout' : 'mdi-login'"
-                    :text="store.isAuthenticated ? 'Logout' : 'Login'"
-                    rounded
-                    min-width="auto"
-                    border
-                    elevation="4"
-                    class="mb-10"
-                    @click="store.isAuthenticated ? store.logout() : goToLogin()"
-                />
-            </v-col>
-        </v-row>
-        <h1 class="text-2xl font-bold mb-4 mt-10 text-center">{{ mainTitle }}</h1>
-        <Swiper
-            :modules="[Navigation, Pagination]"
-            :slides-per-view="1"
-            navigation
-            :space-between="15"
-            :pagination="{ clickable: true }"
-            class="mySwiper pt-4 pb-14 px-12"
-            :breakpoints="{
-                '640': {
-                    slidesPerView: 2,
-                },
-                '768': {
-                    slidesPerView: 3,
-                },
-                '1024': {
-                    slidesPerView: 4,
-                },
-            }"
-        >
-            <SwiperSlide 
-                v-for="item in projects" 
-                :key="item.id"
-            >
-
-                <v-card>
-
-                    <v-img
-                        height="250"
-                        :src="item.allimages.landscape.fullhd"
-                        cover
+        <v-container>
+            <v-row>
+                <v-col
+                    cols="12"
+                    class="d-flex justify-between align-center mb-10"
+                >
+                    <v-badge
+                    :content="store.favorites.length"
+                    color="red"
+                    overlap
+                    >
+                    <v-btn
+                        append-icon="mdi-heart"
+                        text="Favorites"
+                        rounded
+                        min-width="auto"
+                        border
+                        elevation="4"
+                        :disabled="!store.isAuthenticated"
+                        @click="router.push('/favorites')"
                     />
+                    </v-badge>
 
-                    <v-card-item>
-                        <v-card-title class="text-h5">{{ item.title }}</v-card-title>
-                    </v-card-item>
+                    <v-btn
+                        color="primary"
+                        :append-icon="store.isAuthenticated ? 'mdi-logout' : 'mdi-login'"
+                        :text="store.isAuthenticated ? 'Logout' : 'Login'"
+                        rounded
+                        min-width="auto"
+                        border
+                        elevation="4"
+                        @click="store.isAuthenticated ? store.logout() : goToLogin()"
+                    />
+                </v-col>
+            </v-row>
+        </v-container>
 
-                    <v-card-text>
-                        <div class="line-clamp-4">{{ item.description }}</div>
-                    </v-card-text>
+        <h1 class="text-2xl font-bold mb-4 mt-10 text-center">{{ mainTitle }}</h1>
 
-                    <v-divider class="mx-4 mb-1" />
+        <ProjectsSlider :projects="projects" />
 
-                    <v-card-actions>
-                        <v-btn
-                            color="primary"
-                            append-icon="mdi-heart"
-                            :text="isFavorite(item.id) ? 'Remove from Favorites' : 'Add to Favorites'"
-                            block
-                            rounded
-                            min-width="auto"
-                            border
-                            @click="toggleFavorite(item.id)"
-                        />
-                    </v-card-actions>
-                </v-card>
-
-            </SwiperSlide>
-        </Swiper>
     </div>
 </template>
 
@@ -85,11 +49,7 @@ import { ref, onMounted } from 'vue';
 import { useStore } from '@/stores/useStore';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
-import { Navigation, Pagination } from 'swiper/modules';
-import { Swiper, SwiperSlide } from 'swiper/vue';
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
+import ProjectsSlider from '@/components/ProjectsSlider.vue';
 
 const store = useStore();
 const router = useRouter();
@@ -108,24 +68,13 @@ const fetchProjects = async () => {
     }
 };
 
-const toggleFavorite = (projectId: number) => {
-if (store.isAuthenticated) {
-        store.toggleFavorite(projectId);
-    } else {
-        alert('Please log in to add to favorites.');
-    }
-};
-
-const isFavorite = (projectId: number) => {
-    return store.favorites.includes(projectId);
-};
-
 const goToLogin = () => {
   router.push('/signin');
 };
 
 onMounted(() => {
     fetchProjects();
+    store.restoreSession();
 });
 
 </script>

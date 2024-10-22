@@ -36,9 +36,16 @@
                         required
                     />
 
+                    <div
+                        v-if="store.loginErrorMessage"
+                        class="text-red-500 text-sm mt-2"
+                    >
+                        {{ store.loginErrorMessage }}
+                    </div>
+
                     <div class="d-flex justify-end">
                         <v-btn
-                            color="success"
+                            color="primary"
                             class="mt-10"
                             :disabled="!isValid"
                             @click="submitForm"
@@ -81,7 +88,9 @@ const passwordRules = [
 const submitForm = () => {
     if (formRef.value && formRef.value.validate()) {
         store.login(email.value, password.value).then(() => {
-            router.push('/'); // Redirect to main page on successful login
+            if (store.isAuthenticated) {
+                router.push('/'); // Redirect to main page on successful login
+            }
         });
     }
 };
