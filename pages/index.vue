@@ -7,10 +7,10 @@
                     class="d-flex justify-between align-center mb-10"
                 >
                     <v-badge
-                        :content="store.favorites.length"
+                        :content="store.favoritesData?.count_item"
                         color="red"
                         overlap
-                        :class="store.favorites.length === 0 ? 'invisible' : ''"
+                        :class="store.favoritesData?.count_item === 0 ? 'invisible' : ''"
                     >
                     <v-btn
                         append-icon="mdi-heart"
@@ -57,14 +57,23 @@ const router = useRouter();
 const projects = ref([]);
 const mainTitle = ref('');
 
+definePageMeta({
+  title: 'Homepage',
+  meta: [
+    { name: 'description', content: 'This is the homepage' },
+  ],
+});
+
 const fetchProjects = async () => {
+    store.loading = true;
     try {
         const response = await axios.get('https://sat7.faulio.com/api/v1/pageblocks/vod_main_page');
         mainTitle.value = response.data[2].title;
         
         projects.value = response.data[2].programsobjects;
-        
+        store.loading = false;
     } catch (error) {
+        store.loading = false;
         console.error('Error fetching projects:', error);
     }
 };

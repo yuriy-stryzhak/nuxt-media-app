@@ -2,10 +2,25 @@ import { defineStore } from 'pinia';
 import axios from 'axios';
 
 // Interface for describing the state
+
+interface Program {
+  id: number;
+  title: string;
+  description: string;
+  allimages: {
+    landscape: {
+      fullhd: string;
+    };
+  };
+}
+
 interface StoreState {
+  loading: boolean;
   isAuthenticated: boolean;
   favorites: number[]; // List of favorite program IDs
-  favoritesItems: [];
+  favoritesItems: Program[];
+  favoritesData: any;
+  favoritesLastPage: number;
   userToken: string | null; // User token for authentication
   loginErrorMessage: string;
   deviceId: string;
@@ -16,10 +31,13 @@ interface StoreState {
 
 export const useStore = defineStore('main', {
   state: (): StoreState => ({
+    loading: false,
     isAuthenticated: false,
     favorites: [],
     favoritesItems: [],
+    favoritesData: null,
     userToken: null,
+    favoritesLastPage: 1,
     loginErrorMessage: '',
     deviceId: 'ynt10qn1nhhkydsduew47m5m2k6xhx0',
     deviceType: 'browser',
@@ -72,6 +90,8 @@ export const useStore = defineStore('main', {
       this.profileId = null;
       this.favorites = [];
       this.favoritesItems = [];
+      this.favoritesData = null;
+      this.favoritesLastPage = 1;
       localStorage.removeItem('userToken');
       localStorage.removeItem('profileId');
     },
@@ -89,11 +109,12 @@ export const useStore = defineStore('main', {
     },
 
     // Fetch the list of favorite programs
-    async fetchFavorites() {
+    async fetchFavorites(page = 1) {
       if (this.userToken && this.profileId) {
+        this.loading = true;
         try {
           const response = await axios.post(
-            'https://sat7.faulio.com/api/v1.1/member/favorites/get?page=1&type=programs',
+            `https://sat7.faulio.com/api/v1.1/member/favorites/get?page=${page}&type=programs`,
             {},
             {
               headers: { 
@@ -105,11 +126,30 @@ export const useStore = defineStore('main', {
                 },
             }
           );
-          this.favorites = response.data.list.map((program: any) => program.id); // Presumably
+          
+          if (page === 1) {
+            this.favorites = response.data.list.map((program: any) => program.id);
+            this.favoritesItems = response.data.list;
+          } else {
 
-          this.favoritesItems = response.data.list;
+            this.favorites = [
+              ...this.favorites,
+              ...response.data.list.map((program: any) => program.id),
+            ];
+
+            this.favoritesItems = [
+              ...this.favoritesItems,
+              ...response.data.list,
+            ];
+          }
+
+          this.favoritesLastPage = response.data.last_page;
+          this.favoritesData = response.data;
+
+          this.loading = false;
           
         } catch (error) {
+          this.loading = false;
           console.error('Failed to fetch favorites:', error);
         }
       }
@@ -132,6 +172,7 @@ export const useStore = defineStore('main', {
             }
           );
           this.favorites.push(programId);
+          await this.fetchFavorites();
         } catch (error) {
           console.error('Failed to add favorite:', error);
         }
@@ -155,6 +196,7 @@ export const useStore = defineStore('main', {
             }
           );
           this.favorites = this.favorites.filter((id) => id !== programId);
+          await this.fetchFavorites();
         } catch (error) {
           console.error('Failed to remove favorite:', error);
         }

@@ -26,7 +26,10 @@
             </v-row>
         </v-container>
 
-        <ProjectsSlider :projects="store.favoritesItems" />
+        <ProjectsSlider
+            :projects="store.favoritesItems"
+            @reach-end="loadMore"    
+        />
     </div>
 </template>
 
@@ -38,18 +41,24 @@
 
     const store = useStore();
     const router = useRouter();
+    const currentPage = ref(1);
 
     // definePageMeta({
     //     middleware: 'auth'
     // });
+
+    const loadMore = async() => {
+        if (currentPage.value < store.favoritesLastPage) {
+            currentPage.value += 1;
+            await store.fetchFavorites(currentPage.value);
+        }
+    };
 
     onMounted(async () => {
         await store.restoreSession();
 
         if (!store.isAuthenticated) {
             router.push('/signin');
-        } else {
-            store.fetchFavorites();
         }
     });
 

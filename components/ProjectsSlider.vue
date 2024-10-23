@@ -1,7 +1,24 @@
 <template>
 
+    <v-container v-if="store.loading">
+        <v-row>
+            <v-col
+            v-for="n in 6"
+            :key="n"
+            cols="12"
+            md="2"
+            >
+            <v-skeleton-loader
+                class="mx-auto border"
+                max-width="300"
+                type="image, article"
+            />
+            </v-col>
+        </v-row>
+    </v-container>
+
     <Swiper
-        v-if="projects.length > 0"
+        v-if="projects.length > 0 && !store.loading"
         :modules="[Navigation, Pagination]"
         :slides-per-view="1"
         navigation
@@ -19,6 +36,7 @@
                 slidesPerView: 4,
             },
         }"
+        @reach-end="onReachEnd"
     >
         <SwiperSlide 
             v-for="item in projects" 
@@ -65,22 +83,9 @@
         </SwiperSlide>
     </Swiper>
 
-    <v-container v-else>
-        <v-row>
-            <v-col
-            v-for="n in 6"
-            :key="n"
-            cols="12"
-            md="2"
-            >
-            <v-skeleton-loader
-                class="mx-auto border"
-                max-width="300"
-                type="image, article"
-            />
-            </v-col>
-        </v-row>
-    </v-container>
+    <div v-if="!store.loading && projects.length === 0">
+        No items found
+    </div>
 
 </template>
 
@@ -100,6 +105,8 @@ const props = defineProps({
     }
 });
 
+const emit = defineEmits(['reach-end']);
+
 const store = useStore();
 
 const toggleFavorite = (projectId: number) => {
@@ -112,6 +119,10 @@ if (store.isAuthenticated) {
 
 const isFavorite = (projectId: number) => {
     return store.favorites.includes(projectId);
+};
+
+const onReachEnd = () => {
+    emit('reach-end');
 };
 
 </script>
